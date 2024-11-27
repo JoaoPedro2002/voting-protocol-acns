@@ -1,12 +1,12 @@
 [submodule "helios-pqc"]
 	path = helios-pqc
-	url = https://github.com/JoaoPedro2002/helios-pqc
+	url = ../helios-pqc
 [submodule "lattice-voting-ctrsa21"]
 	path = lattice-voting-ctrsa21
-	url = https://github.com/JoaoPedro2002/lattice-voting-ctrsa21
+	url = ../lattice-voting-ctrsa21
 [submodule "lbvs-lib"]
 	path = lbvs-lib
-	url = https://github.com/JoaoPedro2002/lbvs-lib
+	url = ../lbvs-lib
 [submodule "players-api"]
 	path = players-api
-	url = https://github.com/JoaoPedro2002/players-api
+	url = ../players-api
