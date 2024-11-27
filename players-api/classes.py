@@ -10,17 +10,19 @@ Poly = str
 # - Verifiable encryption
 ########################################
 
+QcrtPoly = list[Poly] # 2
+
 class PublicKey(BaseModel):
-    A: list[list[Poly]] # DIM * DIM
-    t: list[Poly] # DIM
+    A: list[list[QcrtPoly]] # DIM * DIM
+    t: list[QcrtPoly] # DIM
 
 class PrivateKey(BaseModel):
-    s1: list[Poly] # DIM
-    s2: list[Poly] # DIM
+    s1: list[QcrtPoly] # DIM
+    s2: list[QcrtPoly] # DIM
 
 class Ciphertext(BaseModel):
-    v: list[Poly] # DIM
-    w: Poly
+    v: list[QcrtPoly] # DIM
+    w: QcrtPoly
 
 class Veritext(BaseModel):
     cipher: list[Ciphertext] # VECTOR
@@ -40,15 +42,17 @@ class VeritextZ(BaseModel):
 # - Commitment
 ########################################
 
+PcrtPoly = list[Poly] # 2
+
 class CommitmentKey(BaseModel):
-    B1: list[list[Poly]] # WIDTH * HEIGHT
-    b2: list[Poly] # WIDTH
+    B1: list[list[PcrtPoly]] # WIDTH * HEIGHT
+    b2: list[PcrtPoly] # WIDTH
 
 class Commitment(BaseModel):
-    c1: Poly
-    c2: Poly
+    c1: PcrtPoly
+    c2: PcrtPoly
 
-Opening = list[Poly]
+Opening = list[PcrtPoly]
 
 ########################################
 # - ZK Proofs
@@ -67,9 +71,9 @@ class ShuffleProof(BaseModel):
     d: list[Commitment]
     y: list[Opening]
     _y: list[Opening]
-    t: list[Poly]
-    _t: list[Poly]
-    u: list[Poly]
+    t: list[PcrtPoly]
+    _t: list[PcrtPoly]
+    u: list[PcrtPoly]
     s: list[Poly]
     rho: Poly
 
