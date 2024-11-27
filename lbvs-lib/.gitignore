@@ -1,4 +1,4 @@
-.idea
-.venv
-.pytest_cache
+.idea/
+.venv/
+.pytest_cache/
 dist
