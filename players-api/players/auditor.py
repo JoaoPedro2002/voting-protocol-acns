@@ -1,11 +1,17 @@
 from lbvs_lib.classes import NMOD_POLY_TYPE
-from lbvs_lib.serializers import deserialize_shuffle_proof, deserialize_c_obj, serialize
+from lbvs_lib.serializers import deserialize_shuffle_proof, deserialize_c_obj, serialize, deserialize_pk
 from lbvs_lib.primitives import vericrypt, lib
 from lbvs_lib.scheme_algorithms import verify
 from lbvs_lib.utils import ev_equals, pv_equals
 
 from app import app, SessionDep
-from classes import DecipheredBallots
+from classes import DecipheredBallots, AuditorSetup
+
+
+@app.post("/auditor/setup")
+def setup(setup_params: AuditorSetup):
+    pk = deserialize_pk(setup_params.instance.pk.model_dump(mode="json"))
+    print(pk)
 
 
 @app.get("/auditor/verify_ballots")

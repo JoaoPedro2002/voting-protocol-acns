@@ -1,17 +1,9 @@
+# import env firt to load routes and tables
+from env import port
+
 import uvicorn
-
-from app import app
-
 import os
-
-
-port = int(os.environ.get("PORT", "8000"))
-
-# Load only required modules
-modules = ["SHUFFLE_SERVER", "RETURN_CODE_SERVER", "AUDITOR"]
-for module in modules:
-    if os.environ.get(module):
-        exec(f"from players.{module.lower()} import *")
+from app import app
 
 if __name__ == "__main__":
     kwargs = {

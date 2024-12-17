@@ -95,27 +95,40 @@ class ElectionCK(BaseModel):
     pk_V: PublicKey
     dk_R: PrivateKey
 
+class ElectionInstance(BaseModel):
+    pk: ElectionPK | None
+    auditors_urls: list[str]
+    shuffle_server_url: str
+    return_code_server_url: str
+    ballot_box_url: str
+    election_uuid: str
+    ballot_box_uuid: str
+
 class ReturnCodeSetup(BaseModel):
-    pk: ElectionPK
+    instance: ElectionInstance
     ck: ElectionCK
 
 class ShuffleServerSetup(BaseModel):
-    pk: ElectionPK
+    instance: ElectionInstance
     dk: ElectionDK
 
 class AuditorSetup(BaseModel):
-    pk: ElectionPK
+    instance: ElectionInstance
+
+class PrfKey(BaseModel):
+    key: str
 
 ########################################
 # Registration Phase
 ########################################
 
-VoterVVK = Poly
+VoterVVK = Commitment
 
 class VoterRegistration(BaseModel):
-    voter_id: str
-    voter_email: str
+    voter_uuid: str
+    voter_email: str | None
     vvk: VoterVVK
+    election_uuid: str
 
 ########################################
 # Casting Phase
@@ -134,11 +147,14 @@ class BallotProof(BaseModel):
     e_r: Veritext
     proof: SumProof
 
-class Vote(BaseModel):
-    voter_id: str
-    voter_email: str
+class Question(BaseModel):
     ev: EncryptedBallot
     proof: BallotProof
+
+class Vote(BaseModel):
+    voter_uuid: str
+    election_uuid: str
+    questions: list[Question]
 
 ########################################
 # - Code
