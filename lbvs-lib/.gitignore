@@ -3,4 +3,4 @@
 .pytest_cache/
 dist
 
-src/lbvs_lib/shared_lib.so
+#src/lbvs_lib/shared_lib.so

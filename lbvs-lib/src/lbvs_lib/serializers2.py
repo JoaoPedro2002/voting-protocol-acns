@@ -29,7 +29,7 @@ class NmodRepr:
         for coeff in s:
             shared_library.nmod_poly_set_coeff_ui(poly, coeff[0], coeff[1])
 
-    def __init__(self, type='list'):
+    def __init__(self, type='str'):
         self.type = type
         if type == 'list':
             self.serialize = self.list_poly_serialize
@@ -69,7 +69,7 @@ class FmpzRepr:
             shared_library.fmpz_mod_poly_set_coeff_fmpz(poly, coeff[0], fmpz, ctx)
         shared_library.fmpz_clear(fmpz)
 
-    def __init__(self, type='list'):
+    def __init__(self, type='str'):
         self.type = type
         if type == 'list':
             self.serialize = self.list_poly_serialize
