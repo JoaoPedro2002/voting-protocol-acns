@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-present João Pedro Cardoso Barbosa <joao.c.barbosa@grad.ufsc.br>
+# SPDX-FileCopyrightText: 2024-present [Anonymous Authors]
 #
 # SPDX-License-Identifier: MIT
 

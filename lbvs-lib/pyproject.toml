@@ -11,7 +11,7 @@ requires-python = ">=3.8"
 license = "MIT"
 keywords = []
 authors = [
-  { name = "João Pedro Cardoso Barbosa", email = "joao.c.barbosa@grad.ufsc.br" },
+  { name = "Anonymous Authors", email = "" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -29,9 +29,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/João Pedro Cardoso Barbosa/lbvs-lib#readme"
-Issues = "https://github.com/João Pedro Cardoso Barbosa/lbvs-lib/issues"
-Source = "https://github.com/João Pedro Cardoso Barbosa/lbvs-lib"
+Documentation = ""
+Issues = ""
+Source = ""
 
 [tool.hatch.version]
 path = "src/lbvs_lib/__about__.py"

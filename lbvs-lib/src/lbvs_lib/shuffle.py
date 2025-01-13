@@ -35,12 +35,9 @@ class Shuffle:
         _t = (PCRT_POLY_TYPE * length)()
         u = (PCRT_POLY_TYPE * length)()
         s = (NMOD_POLY_TYPE * length)()
-        rho = NMOD_POLY_TYPE()
-        t0 = NMOD_POLY_TYPE()
-        t1 = NMOD_POLY_TYPE()
 
-        shared_library.nmod_poly_init(t0, MODP)
-        shared_library.nmod_poly_init(t1, MODP)
+        rho = NMOD_POLY_TYPE()
+
         shared_library.nmod_poly_init(rho, MODP)
         for i in range(length):
             shared_library.nmod_poly_init(s[i], MODP)
@@ -63,14 +60,7 @@ class Shuffle:
                     break
 
         # Verifier shifts the commitments by rho
-        shared_library.nmod_poly_rem(t0, rho, scheme[0].irred[0])
-        shared_library.nmod_poly_rem(t1, rho, scheme[0].irred[1])
-        for i in range(length):
-            shared_library.nmod_poly_sub(com[i][0].c2[0], com[i][0].c2[0], t0)
-            shared_library.nmod_poly_sub(com[i][0].c2[1], com[i][0].c2[1], t0)
-
-        shared_library.nmod_poly_clear(t0)
-        shared_library.nmod_poly_clear(t1)
+        Shuffle.shift_by_rho(shared_library, scheme, com, rho, length)
 
         shared_library.shuffle_prover(y, _y, t, _t, u, scheme, d, s, com, m, _m,
                                       r, rho, ctypes.byref(key), rand, length)
@@ -86,6 +76,25 @@ class Shuffle:
                  com: ctypes.POINTER(ctypes.POINTER(Commitment)), _m: ctypes.POINTER(NMOD_POLY_TYPE),
                  rho: NMOD_POLY_TYPE, key: CommitmentKey, length: int):
         return shared_library.shuffle_verifier(y, _y, t, _t, u, scheme, d, s, com, _m, rho, ctypes.byref(key), length)
+
+    @staticmethod
+    def shift_by_rho(shared_library, scheme: COMMITMENT_SCHEME_TYPE,
+                     com: ctypes.POINTER(ctypes.POINTER(Commitment)) | ctypes.POINTER(Commitment),
+                     rho: NMOD_POLY_TYPE, length: int, is_ptr: bool = True):
+        t0 = NMOD_POLY_TYPE()
+        t1 = NMOD_POLY_TYPE()
+        shared_library.nmod_poly_init(t0, MODP)
+        shared_library.nmod_poly_init(t1, MODP)
+
+        shared_library.nmod_poly_rem(t0, rho, scheme[0].irred[0])
+        shared_library.nmod_poly_rem(t1, rho, scheme[0].irred[1])
+        for i in range(length):
+            com_s = com[i] if not is_ptr else com[i][0]
+            shared_library.nmod_poly_sub(com_s.c2[0], com_s.c2[0], t0)
+            shared_library.nmod_poly_sub(com_s.c2[1], com_s.c2[1], t0)
+
+        shared_library.nmod_poly_clear(t0)
+        shared_library.nmod_poly_clear(t1)
 
     @staticmethod
     def proof_clear(shared_library, y, _y, t, _t, u, d, s, rho, length):

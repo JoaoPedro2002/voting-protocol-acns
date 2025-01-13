@@ -146,35 +146,29 @@ def print_opening(shared_library, opening: PCRT_POLY_TYPE * WIDTH, pretty=True):
     print()
 
 
-def clear_opening(shared_library, opening: PCRT_POLY_TYPE * WIDTH):
-    for i in range(WIDTH):
-        for j in range(2):
-            shared_library.nmod_poly_clear(opening[i][j])
-
-
 def nmod_poly_to_string(shared_library, poly: NMOD_POLY_TYPE) -> str:
     c_p = shared_library.utils_nmod_poly_to_string(poly)
-    s = ctypes.string_at(c_p).decode('utf-8')
+    s = ctypes.string_at(c_p).decode('ascii')
     return s
 
 
 def nmod_poly_from_string(shared_library, s):
     poly = NMOD_POLY_TYPE()
     shared_library.nmod_poly_init(poly, MODP)
-    shared_library.utils_nmod_poly_from_string(poly, s.encode('utf-8'))
+    shared_library.utils_nmod_poly_from_string(poly, s.encode('ascii'))
     return poly
 
 
 def fmpz_mod_poly_to_string(shared_library, poly: FMPZ_MOD_POLY_T, ctx: FMPZ_MOD_CTX_T) -> str:
     c_p = shared_library.utils_fmpz_mod_poly_to_string(poly, ctx)
-    s = ctypes.string_at(c_p).decode('utf-8')
+    s = ctypes.string_at(c_p).decode('ascii')
     return s
 
 
 def fmpz_mod_poly_from_string(shared_library, s: str, ctx):
     poly = FMPZ_MOD_POLY_T()
     shared_library.fmpz_mod_poly_init(poly, ctx)
-    shared_library.utils_fmpz_mod_poly_from_string(poly, s.encode('utf-8'))
+    shared_library.utils_fmpz_mod_poly_from_string(poly, s.encode('ascii'))
     return poly
 
 

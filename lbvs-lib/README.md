@@ -12,6 +12,19 @@
 
 ## Installation
 
+First you need to compile the shared object file. Go to the lattice-voting-ctrsa21 directory 
+and run the following command:
+```console
+make shared-lib
+```
+
+Then move the shared object file to the lbvs-lib directory:
+```console
+mv lattice-voting-ctrsa21/shared_lib.so lbvs-lib/src/lbvs_lib/
+```
+
+Then you can install the package using pip:
+
 ```console
 pip install lbvs-lib
 ```

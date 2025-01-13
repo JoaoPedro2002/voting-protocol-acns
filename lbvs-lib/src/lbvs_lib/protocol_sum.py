@@ -1,10 +1,33 @@
 import ctypes
 
+from .utils import print_nmod_poly
+
 from .compile import WIDTH, MODP, DEGREE
 from .classes import Commitment, COMMITMENT_SCHEME_TYPE, NMOD_POLY_TYPE, CommitmentKey
 
 
 class ProtocolSum:
+    """
+        This represents a Sigma-protocol to prove the relation x3 = alpha x1 + beta x2, given
+        the commitments [[x1]], [[x2]], [[x3]] and the scalars alpha, beta.
+
+        y1:  sample according to a Gaussian distribution in CRT rep
+        y2: sample according to a Gaussian distribution in CRT rep
+        y3: sample according to a Gaussian distribution in CRT rep
+        t1:  sum of the multiplication of y1 with the commitment key (B1)
+        t2: sum of the multiplication of y2 with the commitment key (B2)
+        t3: sum of the multiplication of y3 with the commitment key (B3)
+        u:  sum(y * commitment_key (b2) * alpha) - sum(_y * commitment_key (b2))
+
+        alpha: the scalar alpha
+        beta: the scalar beta
+
+        x1:  the commitment to x1
+        x2: the commitment to x2
+        x3: the commitment to x3
+        key: the commitment key
+        scheme: the commitment scheme
+    """
     @staticmethod
     def prover(shared_library, scheme: COMMITMENT_SCHEME_TYPE, x1: Commitment, x2: Commitment, x3: Commitment,
                key: CommitmentKey, alpha: NMOD_POLY_TYPE, beta: NMOD_POLY_TYPE,
@@ -42,6 +65,41 @@ class ProtocolSum:
                  x1: Commitment, x2: Commitment, x3: Commitment, key: CommitmentKey,
                  alpha: NMOD_POLY_TYPE, beta: NMOD_POLY_TYPE):
         return shared_library.sum_verifier(y1, y2, y3, t1, t2, t3, u, scheme, x1, x2, x3, key, alpha, beta)
+
+    @staticmethod
+    def print_proof(shared_library, proof):
+        y1, y2, y3, t1, t2, t3, u = proof
+
+        print("t1:")
+        for i in range(2):
+            print_nmod_poly(shared_library, t1[i])
+
+        print("t2:")
+        for i in range(2):
+            print_nmod_poly(shared_library, t2[i])
+
+        print("t3:")
+        for i in range(2):
+            print_nmod_poly(shared_library, t3[i])
+
+        print("u:")
+        for i in range(2):
+            print_nmod_poly(shared_library, u[i])
+
+        print("y1:")
+        for i in range(WIDTH):
+            for j in range(2):
+                print_nmod_poly(shared_library, y1[i][j])
+
+        print("y2:")
+        for i in range(WIDTH):
+            for j in range(2):
+                print_nmod_poly(shared_library, y2[i][j])
+
+        print("y3:")
+        for i in range(WIDTH):
+            for j in range(2):
+                print_nmod_poly(shared_library, y3[i][j])
 
     @staticmethod
     def proof_clear(shared_library, proof):

@@ -1,6 +1,5 @@
-from .classes import Veritext
-from .compile import shared_library, ctypes
-from .utils import clear_opening
+from .classes import Veritext, PCRT_POLY_TYPE
+from .compile import shared_library, ctypes, WIDTH
 from .primitives import encryption_scheme, commitment_scheme, vericrypt
 from .protocol_sum import ProtocolSum
 
@@ -19,7 +18,7 @@ def clear_voter(voter):
     a, c_a, d_a = vck
     shared_library.nmod_poly_clear(a)
     shared_library.commit_free(ctypes.byref(c_a))
-    clear_opening(shared_library, d_a)
+    clear_opening(d_a)
 
 
 def clear_ev_and_proof(ballot, proof):
@@ -36,3 +35,9 @@ def clear_ev_and_proof(ballot, proof):
         u=z[3]
     ))
     ProtocolSum.proof_clear(shared_library, sum_proof)
+
+
+def clear_opening(opening: PCRT_POLY_TYPE * WIDTH):
+    for i in range(WIDTH):
+        for j in range(2):
+            shared_library.nmod_poly_clear(opening[i][j])

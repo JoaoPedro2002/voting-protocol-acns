@@ -1,4 +1,5 @@
 from typing import Tuple
+import timeit
 
 from .classes import Commitment, CommitmentKey, Ciphertext, PublicKey, NMOD_POLY_TYPE, PCRT_POLY_TYPE, FMPZ_MOD_POLY_T, \
     Veritext
@@ -6,8 +7,9 @@ from .compile import DEGREE, MODP, VECTOR, WIDTH, shared_library, ctypes
 from .primitives import commitment_scheme, encryption_scheme, vericrypt, flint_rand
 from .protocol_sum import ProtocolSum
 from .shuffle import Shuffle
-from .utils import (fmpz_to_opening, opening_to_fmpz, clear_opening, c1_to_fmpz, b1_to_fmpz, print_nmod_poly,
-                   print_fmpz_mod_poly)
+from .utils import (fmpz_to_opening, opening_to_fmpz, c1_to_fmpz, b1_to_fmpz, print_nmod_poly,
+                    print_fmpz_mod_poly)
+from .cleanup import clear_opening
 
 
 def ballot_to_precode(v, a):
@@ -114,7 +116,7 @@ def cast(pk: Tuple[CommitmentKey, PublicKey, PublicKey],
     (c_r, d_r) = commitment_scheme.commit(pk_C, r, only_r=True)
     # print_opening(self.shared_library, d_r)
 
-    # Π^lin_r is a proof that c + c_a (which is a commitment to v + a) and c_r satisfy the relation v + a = r
+    # Π^sum is a proof that c, c_a and c_r satisfy the relation v + a = r
     alpha = NMOD_POLY_TYPE()
     shared_library.nmod_poly_init(alpha, MODP)
     shared_library.utils_nmod_poly_one(alpha)
@@ -133,20 +135,19 @@ def cast(pk: Tuple[CommitmentKey, PublicKey, PublicKey],
     # e_r = (v_r , w_r , c_r , z_r ) ← Enc_{VE} (pk_R, d_r )
     e_r = __encrypt_opening(pk_R, d_r, c_r, pk_C)
 
-    # The encrypted ballot is ev = (c, d, _v, _w, _c)
+    # The encrypted ballot is ev = (c, _v, _w, _c)
     # v, w = cipher
     encrypted_ballot = (c, e.cipher, e.c)
-    # the ballot proof is Π^v = (z, c_r , e_r , Π^lin_r )
+    # the ballot proof is Π^v = (z, c_r , e_r , Π^sum_r )
     ballot_proof = (e.z, c_r, e_r, proof)
-
     # with the encrypted_ballot and ballot_proof e can be reconstructed
 
     # Cleanup
     shared_library.nmod_poly_clear(alpha)
     shared_library.nmod_poly_clear(beta)
     shared_library.nmod_poly_clear(r)
-    clear_opening(shared_library, d)
-    clear_opening(shared_library, d_r)
+    clear_opening(d)
+    clear_opening(d_r)
 
     return encrypted_ballot, ballot_proof
 
@@ -159,10 +160,12 @@ def code(pk: tuple, ck: tuple, vvk: Commitment, ev: tuple, ballot_proof: tuple):
     :param ev: encrypted ballot (c, d, cipher, _c, u)
     :param ballot_proof: ballot proof (z, c_r, e_r, lin_proof)
     """
+    final_result = True
+
     pk_C, pk_V, pk_R = pk
     _, _, dk_R = ck
     c, cipher, _c = ev
-    z, c_r, e_r, lin_proof = ballot_proof
+    z, c_r, e_r, sum_proof = ballot_proof
     c_a = vvk
 
     alpha = NMOD_POLY_TYPE()
@@ -172,12 +175,13 @@ def code(pk: tuple, ck: tuple, vvk: Commitment, ev: tuple, ballot_proof: tuple):
     shared_library.nmod_poly_init(beta, MODP)
     shared_library.utils_nmod_poly_one(beta)
 
-    # It verifies Π^lin_r
-    result = ProtocolSum.verifier(shared_library, *lin_proof, commitment_scheme.scheme,
+    # It verifies Π^sum_r
+    result = ProtocolSum.verifier(shared_library, *sum_proof, commitment_scheme.scheme,
                                   c, c_a, c_r, pk_C,
                                   alpha, beta)
 
-    assert result, "Sum proof failed"
+
+    final_result &= result
 
     # recover e from (cipher{v,w}, _c, z)
     e = Veritext(
@@ -193,12 +197,12 @@ def code(pk: tuple, ck: tuple, vvk: Commitment, ev: tuple, ballot_proof: tuple):
     t = b1_to_fmpz(shared_library, pk_C.B1, commitment_scheme.scheme, vericrypt.context_p)
     u = c1_to_fmpz(shared_library, c.c1, commitment_scheme.scheme, vericrypt.context_p)
     result = vericrypt.verify(e, t, u, pk_V)
-    assert result, "Verification failed for e"
+    final_result &= result
 
     # and e_r
     u_r = c1_to_fmpz(shared_library, c_r.c1, commitment_scheme.scheme, vericrypt.context_p)
     result = vericrypt.verify(e_r, t, u_r, pk_R)
-    assert result, "Verification failed for e_r"
+    final_result &= result
 
     # It then decrypts d_r ← e_r
     fmpz_d_r = __decrypt_opening(dk_R, e_r.cipher)
@@ -210,7 +214,8 @@ def code(pk: tuple, ck: tuple, vvk: Commitment, ev: tuple, ballot_proof: tuple):
 
     # and recovers r from c_r and d_r
     r = commitment_scheme.message_rec(c_r, pk_C, d_r)
-    return r
+
+    return r, final_result
 
 
 def count(dk, encrypted_ballots):

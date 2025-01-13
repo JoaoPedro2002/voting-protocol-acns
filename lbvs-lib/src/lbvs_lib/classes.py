@@ -527,3 +527,23 @@ shared_library.shuffle_run.argtypes = (COMMITMENT_SCHEME_TYPE,  # commitment_sch
                                        FLINT_RAND_T,  # rng
                                        ctypes.c_int)  # len
 shared_library.shuffle_run.restype = ctypes.c_int
+
+shared_library.malloc_opening.argtypes = (ctypes.c_size_t,)
+shared_library.malloc_opening.restype = ctypes.POINTER(OPENING_TYPE)
+
+shared_library.malloc_pcrt_poly.argtypes = (ctypes.c_size_t,)
+shared_library.malloc_pcrt_poly.restype = ctypes.POINTER(PCRT_POLY_TYPE)
+
+shared_library.malloc_poly.argtypes = (ctypes.c_size_t,)
+shared_library.malloc_poly.restype = ctypes.POINTER(NMOD_POLY_TYPE)
+
+shared_library.malloc_commit.argtypes = (ctypes.c_size_t,)
+shared_library.malloc_commit.restype = ctypes.POINTER(Commitment)
+
+shared_library.fmpz_get_ui.argtypes = (FMPZ_T,)
+shared_library.fmpz_get_ui.restype = ctypes.c_ulong
+
+shared_library.fmpz_get_str.argtypes = (ctypes.c_char_p, ctypes.c_int, FMPZ_T)
+shared_library.fmpz_get_str.restype = ctypes.c_char_p
+
+shared_library.fmpz_set_str.argtypes = (FMPZ_T, ctypes.c_char_p, ctypes.c_int)

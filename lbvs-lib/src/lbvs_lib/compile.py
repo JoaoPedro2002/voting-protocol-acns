@@ -6,12 +6,6 @@ import ctypes
 import os
 
 file_path = __file__.replace("compile.py", "shared_lib.so")
-if not os.path.exists(file_path):
-    import subprocess
-    make_process = subprocess.Popen(f"make clean shared-lib", shell=True, cwd=os.path.dirname(file_path))
-    if make_process.wait() != 0:
-        raise Exception(make_process.poll())
-
 shared_library = ctypes.CDLL(file_path)
 
 

@@ -1,5 +1,5 @@
 from .compile import WIDTH, DIM, VECTOR, shared_library
-from .primitives import primitives
+from .primitives import primitives, vericrypt
 from .classes import ctypes, PCRT_POLY_TYPE, NMOD_POLY_TYPE, FMPZ_MOD_POLY_T, PrivateKey, PublicKey, Ciphertext, \
     Veritext, Commitment, CommitmentKey, OPENING_TYPE
 from .utils import nmod_poly_to_string, fmpz_mod_poly_to_string, nmod_poly_from_string, fmpz_mod_poly_from_string
@@ -91,14 +91,16 @@ class NmodPolySerializer(Serializer):
 
 
 class FmpzModPolySerializer(Serializer):
+    context = vericrypt.context
+
     def __init__(self):
         super().__init__(FMPZ_MOD_POLY_T)
 
     def serialize(self, obj):
-        return fmpz_mod_poly_to_string(shared_library, obj, primitives.vericrypt.context)
+        return fmpz_mod_poly_to_string(shared_library, obj, FmpzModPolySerializer.context)
 
     def deserialize(self, obj):
-        return fmpz_mod_poly_from_string(shared_library, obj, primitives.vericrypt.context)
+        return fmpz_mod_poly_from_string(shared_library, obj, FmpzModPolySerializer.context)
 
 
 def deserialize_c_obj(field, obj):
@@ -155,7 +157,10 @@ class StructSerializer(Serializer):
         params = {}
         for field in struct._fields_:
             field_name = field[0]
+            if (field_name == "u" or field_name == "c") and struct == Veritext:
+                FmpzModPolySerializer.context = vericrypt.context_p
             c_obj = deserialize_c_obj(field, json_obj[field_name])
+            FmpzModPolySerializer.context = vericrypt.context
 
             params[field_name] = c_obj
 
@@ -311,12 +316,16 @@ def deserialize_ballot_proof(data):
 def serialize_z(z):
     r, e, e_, u = z
 
-    return {
+    z = {
         "r": serialize(r),
         "e": serialize(e),
         "e_": serialize(e_),
-        "u": serialize(u)
     }
+    FmpzModPolySerializer.context = vericrypt.context_p
+    z['u'] = serialize(u)
+    FmpzModPolySerializer.context = vericrypt.context
+
+    return z
 
 
 def serialize_ballot_proof(data):
