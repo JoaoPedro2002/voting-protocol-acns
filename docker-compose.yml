@@ -1,0 +1,133 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:12.0-alpine
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+    network_mode: "host"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    # uses port 5672 for AMQP and 15672 for the management interface
+    restart: unless-stopped
+    network_mode: "host"
+
+  helios:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: helios
+    command: bash -c "python manage.py migrate && python manage.py runserver"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - db
+      - rabbitmq
+    network_mode: "host"
+
+  helios_worker:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: helios
+    command: bash -c "celery --app helios worker --events --beat --concurrency=1"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - db
+      - helios
+      - rabbitmq
+    network_mode: "host"
+
+  return_code_server:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: players-api
+    environment:
+      - RETURN_CODE_SERVER=1
+      - PORT=8001
+    env_file:
+      - .env
+    restart: unless-stopped
+    network_mode: "host"
+
+  shuffle_server:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: players-api
+    ports:
+      - "8002:8002"
+    environment:
+      - SHUFFLE_SERVER=1
+      - PORT=8002
+    env_file:
+      - .env
+    restart: unless-stopped
+    network_mode: "host"
+
+  auditor:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: players-api
+    ports:
+      - "8003:8003"
+    environment:
+      - AUDITOR=1
+      - PORT=8003
+    env_file:
+      - .env
+    restart: unless-stopped
+    network_mode: "host"
+
+  phone:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: players-api
+    ports:
+      - "8004:8004"
+    environment:
+      - PHONE=1
+      - PORT=8004
+    env_file:
+      - .env
+    restart: unless-stopped
+    network_mode: "host"
+
+  voter:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: players-api
+    ports:
+      - "8005:8005"
+    environment:
+      - VOTER=1
+      - PORT=8005
+    env_file:
+      - .env
+    restart: unless-stopped
+    network_mode: "host"
+
+volumes:
+  logs_volume:
+    driver: local
+  #        driver_opts:
+  #            o: bind
+  #            type: none
+  #            device: ${PWD}/docker-volumes/heliosapp/logs
+  postgres_volume:
+    driver: local
+#        driver_opts:
+#            o: bind
+#            type: none
+#            device: ${PWD}/docker-volumes/heliosapp/postgres

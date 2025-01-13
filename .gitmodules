@@ -1,9 +1,9 @@
 [submodule "helios-pqc"]
 	path = helios-pqc
 	url = ../helios-pqc
-[submodule "lattice-voting-ctrsa21"]
-	path = lattice-voting-ctrsa21
-	url = ../lattice-voting-ctrsa21
+[submodule "lattice-primitives"]
+	path = lattice-primitives
+	url = ../lattice-primitives.git
 [submodule "lbvs-lib"]
 	path = lbvs-lib
 	url = ../lbvs-lib

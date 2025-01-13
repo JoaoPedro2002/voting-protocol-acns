@@ -1,3 +1,6 @@
+### Makefile for compiling FLINT library
+## FLINT dependencies: GMP and MPFR
+
 BUILD_DIR := ${CURR_DIR}/build
 __dummy := $(shell mkdir -p ${BUILD_DIR} ${SO_OUTPUT_DIR} ${WASM_OUTPUT_DIR})
 
