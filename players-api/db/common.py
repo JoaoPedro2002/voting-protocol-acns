@@ -1,4 +1,5 @@
 from typing import Dict
+from datetime import datetime
 
 from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy import Column, JSON
@@ -17,8 +18,6 @@ class PlayerInstance(SQLModel, table=False):
     shuffle_server_url: str = Field(nullable=False)
     return_code_server_url: str = Field(nullable=False)
     ballot_box_url: str = Field(nullable=False)
-    election_uuid: str = Field(nullable=False, unique=True)
-    ballot_box_uuid: str = Field(nullable=False, unique=True)
     state: str = Field(nullable=False, default="setup")
 
     def next_state(self):
@@ -29,6 +28,10 @@ class PlayerInstance(SQLModel, table=False):
             self.state = "finished"
         self.state = STATES[state]
 
+    @property
+    def election_url(self):
+        return self.ballot_box_url + "/helios/elections/" + self.election_uuid
+
 
 class Vote(SQLModel, table=True):
     __tablename__ = "votes"
@@ -36,6 +39,7 @@ class Vote(SQLModel, table=True):
     voter_id: str = Field(nullable=False)
     election_uuid: str = Field(nullable=False)
     questions: list["Question"] = Relationship(back_populates="vote")
+    created_at: datetime = Field(default_factory=lambda: datetime.now())
 
 
 class Question(SQLModel, table=True):
@@ -51,6 +55,6 @@ class VoterPublicData(SQLModel, table=True):
     __tablename__ = "voters_public_data"
     id: int = Field(primary_key=True)
     voter_uuid: str = Field(nullable=False, unique=True)
-    voter_email: str = Field(nullable=False)
+    voter_phone_address: str = Field(nullable=False)
     vvk: Dict = SerializableType()
     election_uuid: str = Field(nullable=False)

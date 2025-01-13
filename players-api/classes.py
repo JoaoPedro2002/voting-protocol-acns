@@ -4,7 +4,7 @@ from pydantic import BaseModel
 # Primitive types
 ########################################
 
-Poly = str
+Poly = list[list[int | str]] | str
 
 ########################################
 # - Verifiable encryption
@@ -126,9 +126,13 @@ VoterVVK = Commitment
 
 class VoterRegistration(BaseModel):
     voter_uuid: str
-    voter_email: str | None
+    voter_phone_address: str | None
     vvk: VoterVVK
     election_uuid: str
+
+class PhoneRegistration(BaseModel):
+    voter_uuid: str
+    rct: list[dict]
 
 ########################################
 # Casting Phase
@@ -136,25 +140,38 @@ class VoterRegistration(BaseModel):
 # - Voting
 ########################################
 
-class EncryptedBallot(BaseModel):
-    c: Commitment
-    cipher: list[Ciphertext]
-    e_c: Poly
-
-class BallotProof(BaseModel):
-    z: VeritextZ
-    c_r: Commitment
-    e_r: Veritext
-    proof: SumProof
+# class EncryptedBallot(BaseModel):
+#     c: Commitment
+#     cipher: list[Ciphertext]
+#     e_c: Poly
+#
+# class BallotProof(BaseModel):
+#     z: VeritextZ
+#     c_r: Commitment
+#     e_r: Veritext
+#     proof: SumProof
 
 class Question(BaseModel):
-    ev: EncryptedBallot
-    proof: BallotProof
+    ev: dict
+    proof: dict
 
 class Vote(BaseModel):
     voter_uuid: str
     election_uuid: str
     questions: list[Question]
+
+class PlainVote(BaseModel):
+    questions: list[list[int]]
+
+class TBCastVote(BaseModel):
+    voter_uuid: str
+    username: str
+    password: str
+    vote: PlainVote
+
+class VoteToPhone(BaseModel):
+    voter_uuid: str
+    vote: PlainVote
 
 ########################################
 # - Code
@@ -166,11 +183,15 @@ Return Code Server -> Voter
 class ReturnCode(BaseModel):
     code: str
 
+class PhoneVerification(BaseModel):
+    voter_uuid: str
+    return_codes: list[ReturnCode]
+
 """
 Voter -> Return Code Server -> Ballot Box
 """
 class VoteConfirmation(BaseModel):
-    voter_id: str
+    voter_uuid: str
     confirmation: bool
 
 ########################################
@@ -181,21 +202,28 @@ class VoteConfirmation(BaseModel):
 Ballot Box -> Shuffle Server
 """
 class EncryptedBallotList(BaseModel):
-    ballots: list[EncryptedBallot]
+    ballots: list[list[dict]]
+    election_uuid: str
 
-class EncryptedBallotProof(BaseModel):
-    ev: EncryptedBallot
-    proof: BallotProof
 
 """
 Return Code Server & Ballot Box -> Auditor
 """
+class EncryptedBallotProof(BaseModel):
+    ev: dict
+    proof: dict
+
+"""
+List all votes and proofs per question for a given election
+"""
 class EncryptedBallotProofList(BaseModel):
-    ballots_and_proofs: list[EncryptedBallotProof]
+    election_uuid: str
+    ballots_and_proofs: list[list[EncryptedBallotProof]]
 
 """
 Shuffle Server -> Auditor
 """
 class DecipheredBallots(BaseModel):
-    ballots: list[Poly]
-    shuffle_proof: ShuffleProof
+    election_uuid: str
+    ballots: list[list[Poly]]
+    shuffle_proof: list[dict]

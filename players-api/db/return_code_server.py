@@ -14,3 +14,5 @@ class ReturnCodeServerInstance(PlayerInstance, table=True):
     ck: Dict | None = SerializableType()
     prf_key: str = Field(nullable=False, unique=True)
     votes: list[Vote] = Relationship(link_model=ReturnCodeVoteLink)
+    election_uuid: str = Field(nullable=False, unique=True)
+    ballot_box_uuid: str = Field(nullable=False, unique=True)
