@@ -4,3 +4,4 @@ __pycache__/
 
 # test database
 database.db
+data/

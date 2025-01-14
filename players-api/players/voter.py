@@ -22,13 +22,21 @@ def login_ldap_helios(url: str, user: str, password: str):
     return s
 
 @app.post("/voter/register")
-def register(url: str, election_uuid: str, user: str, password: str, voter_phone: str,
-             session: SessionDep):
+def register(registration: VoterToRegister, session: SessionDep):
+    url = registration.url
+    user = registration.user
+    password = registration.password
+    election_uuid = registration.election_uuid
+    voter_phone = registration.voter_phone
+
     s = login_ldap_helios(url, user, password)
 
     election_url = url + "/helios/elections/" + election_uuid
     instance = ElectionInstance(**s.get(election_url + "/lbvs_instance").json())
     params = s.post(election_url + "/register_lbvs", json={"voter_phone": voter_phone}).json()
+
+    if 'error' in params:
+        return params
 
     session.add(VoterInstance(vvk=params["vvk"],vck=params["vck"], voter_uuid=params["voter_uuid"], voter_phone=voter_phone,
                               **instance.model_dump(mode="json")))

@@ -124,6 +124,13 @@ class PrfKey(BaseModel):
 
 VoterVVK = Commitment
 
+class VoterToRegister(BaseModel):
+    url: str
+    election_uuid: str
+    user: str
+    password: str
+    voter_phone: str
+
 class VoterRegistration(BaseModel):
     voter_uuid: str
     voter_phone_address: str | None
