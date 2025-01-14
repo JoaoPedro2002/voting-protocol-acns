@@ -52,10 +52,12 @@ services:
         target: players-api
     environment:
       - RETURN_CODE_SERVER=1
-      - PORT=8001
+      - PORT=${RETURN_CODE_SERVER_PORT}
     env_file:
       - .env
     restart: unless-stopped
+    volumes:
+      - ${PWD}/volumes/return_code_database:/var/players-api/data
     network_mode: "host"
 
   shuffle_server:
@@ -63,14 +65,14 @@ services:
         context: .
         dockerfile: Dockerfile
         target: players-api
-    ports:
-      - "8002:8002"
     environment:
       - SHUFFLE_SERVER=1
-      - PORT=8002
+      - PORT=${SHUFFLE_SERVER_PORT}
     env_file:
       - .env
     restart: unless-stopped
+    volumes:
+      - ${PWD}/volumes/shuffle_database:/var/players-api/data
     network_mode: "host"
 
   auditor:
@@ -78,14 +80,14 @@ services:
         context: .
         dockerfile: Dockerfile
         target: players-api
-    ports:
-      - "8003:8003"
     environment:
       - AUDITOR=1
-      - PORT=8003
+      - PORT=${AUDITOR_PORT}
     env_file:
       - .env
     restart: unless-stopped
+    volumes:
+      - ${PWD}/volumes/auditor_database:/var/players-api/data
     network_mode: "host"
 
   phone:
@@ -93,14 +95,14 @@ services:
         context: .
         dockerfile: Dockerfile
         target: players-api
-    ports:
-      - "8004:8004"
     environment:
       - PHONE=1
-      - PORT=8004
+      - PORT=${PHONE_PORT}
     env_file:
       - .env
     restart: unless-stopped
+    volumes:
+      - ${PWD}/volumes/phone_database:/var/players-api/data
     network_mode: "host"
 
   voter:
@@ -108,26 +110,18 @@ services:
         context: .
         dockerfile: Dockerfile
         target: players-api
-    ports:
-      - "8005:8005"
     environment:
       - VOTER=1
-      - PORT=8005
+      - PORT=${VOTER_PORT}
     env_file:
       - .env
     restart: unless-stopped
+    volumes:
+      - ${PWD}/volumes/voter_database:/var/players-api/data
     network_mode: "host"
 
 volumes:
   logs_volume:
     driver: local
-  #        driver_opts:
-  #            o: bind
-  #            type: none
-  #            device: ${PWD}/docker-volumes/heliosapp/logs
   postgres_volume:
     driver: local
-#        driver_opts:
-#            o: bind
-#            type: none
-#            device: ${PWD}/docker-volumes/heliosapp/postgres

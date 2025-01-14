@@ -1,4 +1,9 @@
 */.idea
+*/.venv
+*/venv
 compile-flint/output/
 compile-flint/build/
 .idea
+
+desktop/stored_json.json
+volumes/

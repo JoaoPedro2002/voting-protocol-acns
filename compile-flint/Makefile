@@ -7,7 +7,7 @@ __dummy := $(shell mkdir -p ${BUILD_DIR} ${SO_OUTPUT_DIR} ${WASM_OUTPUT_DIR})
 # Libraries
 FLINT_VERSION=3.1.2
 FLINT=flint-${FLINT_VERSION}
-FLINT_SOURCE=https://flintlib.org/${FLINT}.tar.gz
+FLINT_SOURCE=https://flintlib.org/download/${FLINT}.tar.gz
 
 # Compile flags
 FLINT_FLAGS= --enable-shared

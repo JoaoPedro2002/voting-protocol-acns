@@ -12,6 +12,8 @@ RUN \
     apt-get clean
 
 COPY compile-flint/Makefile /var/flint-build/
+# the url changed so we already have the tarball just in case
+COPY compile-flint/flint-3.1.2.tar.gz /var/flint-build/
 
 WORKDIR /var/flint-build/
 
