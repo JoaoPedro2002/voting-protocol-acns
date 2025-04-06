@@ -1,6 +1,6 @@
 # voting-protocol-acns
 
-Implementation for the ACNS 2025 paper ""
+Implementation for the ACNS 2025 paper "From ElGamal to Lattice-Based: Enhancing Helios Voting with Quantum-Safe Cryptography"
 
 ## Execute all players
 
@@ -83,7 +83,7 @@ First define the election uuid:
 export ELECTION_UUID=<election-uuid>
 ````
 
-By default in this script all the users are registered and vote in the election. 
+By default, in this script all the users are registered and vote in the election. 
 if you want to select only some users, you can define the users in the following variable:
 
 ```bash
@@ -117,6 +117,8 @@ Then you can run the benchmarks with the following command:
 ```bash
 make benchmark
 ```
+
+The file `helios-pqc/benchmark.py` can be further modified to test different parameter values.
 
 
 
