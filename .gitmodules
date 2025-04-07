@@ -7,9 +7,6 @@
 [submodule "lbvs-lib"]
 	path = lbvs-lib
 	url = ../lbvs-lib
-[submodule "players-api"]
-	path = players-api
-	url = ../players-api
 [submodule "flint"]
 	path = flint
 	url = https://github.com/flintlib/flint
