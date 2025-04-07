@@ -4,9 +4,6 @@
 [submodule "lattice-primitives"]
 	path = lattice-primitives
 	url = ../lattice-primitives.git
-[submodule "lbvs-lib"]
-	path = lbvs-lib
-	url = ../lbvs-lib
 [submodule "flint"]
 	path = flint
 	url = https://github.com/flintlib/flint
