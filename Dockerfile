@@ -1,23 +1,18 @@
 FROM python:3.12-bullseye AS compile-flint
 
-RUN \
-    apt-get update && \
-    apt-get -y dist-upgrade && \
-    apt-get install -y -q \
-    wget \
-    m4 \
-    build-essential \
-    libgmp-dev libmpfr-dev &&\
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
-
-COPY compile-flint/Makefile /var/flint-build/
-# the url changed so we already have the tarball just in case
-COPY compile-flint/flint-3.1.2.tar.gz /var/flint-build/
+RUN apt-get update \
+    && apt-get install -y -q \
+        libmpfr-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/flint-build/
 
-RUN make libflint
+COPY flint/ ./
+
+RUN ./bootstrap.sh \
+    && ./configure \
+    && make -j \
+    && make install
 
 FROM compile-flint AS compile-lbvs-backend
 
@@ -29,19 +24,11 @@ COPY lattice-primitives/Makefile /var/lbvs-backend/
 
 WORKDIR /var/lbvs-backend/
 
-RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-RUN ldconfig
-
-RUN make shared-lib
+RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib \
+    && ldconfig \
+    && make shared-lib
 
 FROM compile-lbvs-backend AS lbvs-frontend
-
-RUN \
-    apt-get update && \
-    apt-get install -y -q \
-    python3-dev &&\
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
 
 ADD lbvs-lib/src /var/lbvs-frontend/src
 ADD lbvs-lib/pyproject.toml /var/lbvs-frontend/
@@ -52,10 +39,6 @@ WORKDIR /var/lbvs-frontend/
 
 RUN cp /var/lbvs-backend/shared_lib.so src/lbvs_lib/
 
-#RUN pip install hatch
-#
-#RUN hatch build
-
 FROM lbvs-frontend AS players-api
 
 COPY players-api/*.py /var/players-api/
@@ -65,29 +48,19 @@ COPY players-api/requirements.txt /var/players-api/
 
 WORKDIR /var/players-api/
 
-RUN python3 -m venv venv
-RUN . venv/bin/activate
-
-RUN pip install --no-compile --no-cache-dir -r requirements.txt
-RUN pip install /var/lbvs-frontend
-#RUN pip install $(find /var/lbvs-frontend/dist/ -name *.whl)
+RUN pip install --no-compile --no-cache-dir -r requirements.txt \
+    && pip install /var/lbvs-frontend
 
 CMD ["python", "main.py"]
 
 FROM lbvs-frontend AS helios
 
-RUN \
-    apt-get update && \
-    apt-get -y dist-upgrade && \
-    apt-get install -y -q \
-    libsasl2-dev \
-    libldap2-dev \
-    netcat &&\
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+RUN apt-get update \
+    && apt-get install -y -q \
+        libsasl2-dev libldap2-dev netcat \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY helios-pqc/*.py /var/helios-server/
-
 COPY helios-pqc/requirements.txt /var/helios-server/
 COPY helios-pqc/helios/ /var/helios-server/helios/
 COPY helios-pqc/helios_auth/ /var/helios-server/helios_auth/
@@ -99,8 +72,8 @@ COPY helios-pqc/templates/ /var/helios-server/templates/
 
 WORKDIR /var/helios-server/
 
-RUN pip install --no-compile --no-cache-dir -r requirements.txt
-RUN pip install /var/lbvs-frontend
+RUN pip install --no-compile --no-cache-dir -r requirements.txt \
+    && pip install /var/lbvs-frontend
 
 COPY helios-pqc/docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
